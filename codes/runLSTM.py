@@ -1,0 +1,225 @@
+from tensorflow.keras.models import load_model
+import pandas as pd
+import numpy as np
+from sklearn.metrics import r2_score
+import pandas as pd
+import random
+from sklearn.metrics import mean_squared_error
+import matplotlib.pyplot as plt
+
+
+
+name1 = 'test100-row-70114.csv'  #test file
+name = 'model-7-5-100-batch64-9361-row-1143.h5'   #model name
+years = -47
+in_len = 7
+out_len = 5
+
+
+
+test = pd.read_csv(name1)
+
+test = test.iloc[: , years:]
+
+print("*****************Test************************")
+print(test)
+
+
+limit = test.to_numpy().max()
+
+
+
+
+def split_into_sequences(data, seq_len):
+    n_seq = len(data) - seq_len + 1
+    return np.array([data[i:(i+seq_len)] for i in range(n_seq)])
+
+
+def my_split(data,n1,n2):
+    n = n1+n2
+    array1 = split_into_sequences(data, n)
+    s1arr = []
+    s2arr = []
+    for i in range(len(array1)):
+        split1 = array1[i]
+        s1 = split1[0:n1]
+        s2 = split1[n1:n]
+        s1arr.append(s1)
+        s2arr.append(s2)
+
+    return s1arr, s2arr
+
+testX = []
+testY = []
+
+
+for i in range(len(test)):
+  paper = test.iloc[i]
+  paper2 = paper.to_numpy()
+
+  x,y = my_split(paper2,in_len,out_len)
+  for i in range(len(x)):
+    testX.append(x[i])
+
+  for i in range(len(y)):
+    testY.append(y[i])
+
+testX = np.asarray(testX)
+testY = np.asarray(testY)
+
+
+print('*************** testX **********************')
+print(testX)
+print('****************** testY *******************')
+print(testY)
+
+
+
+print('****************8980*********************')
+
+
+tshape = testY.shape
+print(testY.shape)
+
+avgY = np.zeros(shape=tshape)
+print(avgY)
+print(avgY.shape)
+
+lastY = np.zeros(shape=tshape)
+randY = np.zeros(shape=tshape)
+
+for i in range(len(testX)):
+    # print(testX[i])
+    # print(testX[i][-3:])
+    avg = sum(testX[i][-3:])/3
+    # print(avg)
+
+    kk = np.zeros(shape=[1,tshape[1]]) 
+    for j in range(tshape[1]):
+        kk[0,j] = avg
+    # print (kk)
+    avgY[i] = kk
+    # print(avgY)
+
+    mm = np.zeros(shape=[1,tshape[1]]) 
+    for j in range(tshape[1]):
+        mm[0,j] = testX[i][-1:]
+    # print(mm)
+    lastY[i] = mm
+    # print(lastY)
+
+    ff = np.zeros(shape=[1,tshape[1]])
+    for j in range(tshape[1]):
+        ff[0,j] = random.randint(0,limit)
+    # print("ff is ",ff)
+    randY[i] = ff
+    
+
+   
+
+# exit()
+# load model 
+model = load_model(name)
+
+test_output = model.predict(testX, verbose=2)
+print(test_output.shape)
+print(testY.shape)
+test_output = test_output.reshape(720,out_len)
+print(test_output.shape)
+print(test_output)
+
+print('*************9009990990909009990************************')
+r1 = r2_score(testY, test_output)
+print("r2 for lstm: ",r1)
+m1 = mean_squared_error(testY, test_output, squared=False)
+print("rmse for lstm: ",m1)
+
+
+print('*************9009990990909009990************************')
+r2 = r2_score(testY, avgY)
+print("r2 for avg",r2)
+m2 = mean_squared_error(testY, avgY, squared=False)
+print("rmse for avg",m2)
+
+
+
+print('*************9009990990909009990************************')
+r3 = r2_score(testY, lastY)
+print("r2 for last",r3)
+m3 = mean_squared_error(testY, lastY, squared=False)
+print("rmse for last",m3)
+
+
+print('*************9009990990909009990************************')
+a1 = r2_score(testY, randY)
+print("r2 for rand",a1)
+a2 = mean_squared_error(testY, randY, squared=False)
+print("rmse for rand",a2)
+
+
+# rs = [r1,r2,r3]
+# names = ['lstm','avg','last']
+# plt.bar(names, rs,
+#         width = 0.3)
+
+# plt.show()
+
+
+# ms = [m1,m2,m3]
+# names = ['lstm','avg','last']
+# plt.bar(names, ms,
+#         width = 0.3)
+
+# plt.show()
+ 
+
+# print("test4 is ",testX[4])
+# print("actual4 is ",testY[4])
+# print("predict4 is ",test_output[4])
+
+
+# print("test4 is ",testX[200])
+# print("actual4 is ",testY[200])
+# print("predict4 is ",test_output[200])
+
+# print("test4 is ",testX[600])
+# print("actual4 is ",testY[600])
+# print("predict4 is ",test_output[600])
+
+
+# print("test800 is ",testX[800])
+# print("actual800 is ",testY[800])
+# print("predict800 is ",test_output[800])
+
+
+# print("test800 is ",testX[679])
+# print("actual800 is ",testY[679])
+# print("predict800 is ",test_output[679])
+
+
+
+# print("test800 is ",testX[752])
+# print("actual800 is ",testY[752])
+# print("predict800 is ",test_output[752])
+
+
+# print("test800 is ",testX[753])
+# print("actual800 is ",testY[753])
+# print("predict800 is ",test_output[753])
+
+
+# print("test800 is ",testX[756])
+# print("actual800 is ",testY[756])
+# print("predict800 is ",test_output[756])
+
+
+# print("test800 is ",testX[1278])
+# print("actual800 is ",testY[1278])
+# print("predict800 is ",test_output[1278])
+
+
+# print("test800 is ",testX[2807])
+# print("actual800 is ",testY[2807])
+# print("predict800 is ",test_output[2807])
+
+
